@@ -14,7 +14,8 @@
 	
 	$app->post('/passcode', function () {
 		require('aprs_func.php');
-		echo aprspass($_POST['callsign']);
+		$passcode = aprspass($_POST['callsign']);
+		require('templates/passcode.php');
 	});
 
 

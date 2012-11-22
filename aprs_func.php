@@ -1,6 +1,6 @@
 <?php
 
-	function aprspass ($callsign) { 
+function aprspass ($callsign) { 
 	$stophere = strpos($callsign, '-'); 
 	if ($stophere) $callsign = substr($callsign, 0, $stophere); 
 	$realcall = strtoupper(substr($callsign, 0, 10)); 
