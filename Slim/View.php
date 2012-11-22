@@ -2,12 +2,11 @@
 /**
  * Slim - a micro PHP 5 framework
  *
- * @author      Josh Lockhart <info@slimframework.com>
+ * @author      Josh Lockhart <info@joshlockhart.com>
  * @copyright   2011 Josh Lockhart
  * @link        http://www.slimframework.com
  * @license     http://www.slimframework.com/license
- * @version     2.0.0
- * @package     Slim
+ * @version     1.5.0
  *
  * MIT LICENSE
  *
@@ -30,63 +29,48 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-namespace Slim;
 
 /**
- * View
+ * Slim View
  *
- * The view is responsible for rendering a template. The view
- * should subclass \Slim\View and implement this interface:
- *
- * public render(string $template);
- *
- * This method should render the specified template and return
- * the resultant string.
+ * The View is responsible for rendering and/or displaying a template.
+ * It is recommended that you subclass View and re-implement the
+ * `View::render` method to use a custom templating engine such as
+ * Smarty, Twig, Mustache, etc. It is important that `View::render`
+ * `return` the final template output. Do not `echo` the output.
  *
  * @package Slim
- * @author  Josh Lockhart
- * @since   1.0.0
+ * @author  Josh Lockhart <info@joshlockhart.com>
+ * @since   Version 1.0
  */
-class View
-{
-    /**
-     * @var string Absolute or relative filesystem path to a specific template
-     *
-     * DEPRECATION WARNING!
-     * This variable will be removed in the near future
-     */
-    protected $templatePath = '';
+class Slim_View {
 
     /**
-     * @var array Associative array of template variables
+     * @var array Key-value array of data available to the template
      */
     protected $data = array();
 
     /**
-     * @var string Absolute or relative path to the application's templates directory
+     * @var string Absolute or relative path to the templates directory
      */
     protected $templatesDirectory;
 
     /**
      * Constructor
      *
-     * This is empty but may be implemented in a subclass
+     * This is empty but may be overridden in a subclass
      */
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     /**
      * Get data
-     * @param  string|null      $key
-     * @return mixed            If key is null, array of template data;
-     *                          If key exists, value of datum with key;
-     *                          If key does not exist, null;
+     * @param   string              $key
+     * @return  array|mixed|null    All View data if no $key, value of datum
+     *                              if $key, or NULL if $key but datum
+     *                              does not exist.
      */
-    public function getData($key = null)
-    {
-        if (!is_null($key)) {
+    public function getData( $key = null ) {
+        if ( !is_null($key) ) {
             return isset($this->data[$key]) ? $this->data[$key] : null;
         } else {
             return $this->data;
@@ -96,78 +80,59 @@ class View
     /**
      * Set data
      *
-     * If two arguments:
-     * A single datum with key is assigned value;
+     * This method is overloaded to accept two different method signatures.
+     * You may use this to set a specific key with a specfic value,
+     * or you may use this to set all data to a specific array.
      *
-     *     $view->setData('color', 'red');
+     * USAGE:
      *
-     * If one argument:
-     * Replace all data with provided array keys and values;
+     * View::setData('color', 'red');
+     * View::setData(array('color' => 'red', 'number' => 1));
      *
-     *     $view->setData(array('color' => 'red', 'number' => 1));
-     *
-     * @param   mixed
-     * @param   mixed
-     * @throws  InvalidArgumentException If incorrect method signature
+     * @param   string|array
+     * @param   mixed                       Optional. Only use if first argument is a string.
+     * @return  void
+     * @throws  InvalidArgumentException    If incorrect method signature
      */
-    public function setData()
-    {
+    public function setData() {
         $args = func_get_args();
-        if (count($args) === 1 && is_array($args[0])) {
+        if ( count($args) === 1 && is_array($args[0]) ) {
             $this->data = $args[0];
-        } elseif (count($args) === 2) {
-            $this->data[(string) $args[0]] = $args[1];
+        } else if ( count($args) === 2 ) {
+            $this->data[(string)$args[0]] = $args[1];
         } else {
-            throw new \InvalidArgumentException('Cannot set View data with provided arguments. Usage: `View::setData( $key, $value );` or `View::setData([ key => value, ... ]);`');
+            throw new InvalidArgumentException('Cannot set View data with provided arguments. Usage: `View::setData( $key, $value );` or `View::setData([ key => value, ... ]);`');
         }
     }
 
     /**
-     * Append new data to existing template data
-     * @param  array
-     * @throws InvalidArgumentException If not given an array argument
+     * Append data to existing View data
+     * @param   array $data
+     * @return  void
      */
-    public function appendData($data)
-    {
-        if (!is_array($data)) {
-            throw new \InvalidArgumentException('Cannot append view data. Expected array argument.');
-        }
+    public function appendData( array $data ) {
         $this->data = array_merge($this->data, $data);
     }
 
     /**
      * Get templates directory
-     * @return string|null     Path to templates directory without trailing slash;
-     *                         Returns null if templates directory not set;
+     * @return string|null Path to templates directory without trailing slash
      */
-    public function getTemplatesDirectory()
-    {
+    public function getTemplatesDirectory() {
         return $this->templatesDirectory;
     }
 
     /**
      * Set templates directory
-     * @param  string   $dir
+     * @param   string $dir
+     * @return  void
+     * @throws  RuntimeException If directory is not a directory or does not exist
      */
-    public function setTemplatesDirectory($dir)
-    {
-        $this->templatesDirectory = rtrim($dir, '/');
-    }
-
-    /**
-     * Set template
-     * @param  string           $template
-     * @throws RuntimeException If template file does not exist
-     *
-     * DEPRECATION WARNING!
-     * This method will be removed in the near future.
-     */
-    public function setTemplate($template)
-    {
-        $this->templatePath = $this->getTemplatesDirectory() . '/' . ltrim($template, '/');
-        if (!file_exists($this->templatePath)) {
-            throw new \RuntimeException('View cannot render template `' . $this->templatePath . '`. Template does not exist.');
+    public function setTemplatesDirectory( $dir ) {
+        if ( !is_dir($dir) ) {
+            throw new RuntimeException('Cannot set View templates directory to: ' . $dir . '. Directory does not exist.');
         }
+        $this->templatesDirectory = rtrim($dir, '/');
     }
 
     /**
@@ -175,42 +140,28 @@ class View
      *
      * This method echoes the rendered template to the current output buffer
      *
-     * @param  string   $template   Pathname of template file relative to templates directoy
+     * @param   string $template Path to template file relative to templates directoy
+     * @return  void
      */
-    public function display($template)
-    {
-        echo $this->fetch($template);
-    }
-
-    /**
-     * Fetch rendered template
-     *
-     * This method returns the rendered template
-     *
-     * @param  string $template Pathname of template file relative to templates directory
-     * @return string
-     */
-    public function fetch($template)
-    {
-        return $this->render($template);
+    public function display( $template ) {
+        echo $this->render($template);
     }
 
     /**
      * Render template
-     *
-     * @param  string   $template   Pathname of template file relative to templates directory
-     * @return string
-     *
-     * DEPRECATION WARNING!
-     * Use `\Slim\View::fetch` to return a rendered template instead of `\Slim\View::render`.
+     * @param   string $template    Path to template file relative to templates directory
+     * @return  string              Rendered template
+     * @throws  RuntimeException    If template does not exist
      */
-    public function render($template)
-    {
-        $this->setTemplate($template);
+    public function render( $template ) {
         extract($this->data);
+        $templatePath = $this->getTemplatesDirectory() . '/' . ltrim($template, '/');
+        if ( !file_exists($templatePath) ) {
+            throw new RuntimeException('View cannot render template `' . $templatePath . '`. Template does not exist.');
+        }
         ob_start();
-        require $this->templatePath;
-
+        require $templatePath;
         return ob_get_clean();
     }
+
 }
