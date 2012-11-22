@@ -29,12 +29,14 @@
 		
 			<h1>APRS Passcode Generator</h1>
 			
+			<!-- HTML Form to collect callsign. -->
 			<form method="post" action="index.php/passcode">
 				<label for="callsign">Callsign</label>
 				<input type="text" name="callsign" value="" />
 				<input type="submit" name="Submit" value="Get Passcode" />
 			</form>
 			
+			<!-- Info about the project -->
 			<p>Techical Example of Passcode Generation using PHP</p>
 			<p>Source code available on <a href="https://github.com/magicbug/PHP-APRS-Passcode" title="Github" target="_blank">Github</a></p>
 		</div>
