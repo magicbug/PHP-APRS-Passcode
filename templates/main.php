@@ -37,7 +37,7 @@
 			</form>
 			
 			<!-- Info about the project -->
-			<p>Techical Example of Passcode Generation using PHP</p>
+			<p>Technical Example of Passcode Generation using PHP</p>
 			<p>Source code available on <a href="https://github.com/magicbug/PHP-APRS-Passcode" title="Github" target="_blank">Github</a></p>
 		</div>
 	</body>
